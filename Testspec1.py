@@ -12,7 +12,7 @@ import collections
 
 # --------------------------------------------------------------------------------
 
-API_KEY = "RGAPI-b37b8cf9-4576-42be-80c9-920a0c2feac3" #API 24시간마다초기화잊지않기
+API_KEY = "RGAPI-b37b8cf9-4576-42be-80c9-920a0c2feac3" #API 24시간마다초기화잊지않
 PLAYER_NAME = "현실회피장치"
 PLAYER_TAG = "LOL"
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1408331948346179704/1ZQfxKsEiKwX13Ta1fV9iKUC-JXqskG6tqcKfiGC_-ase0RVFN3FtSP1hRA9nH7Qp-cx"
