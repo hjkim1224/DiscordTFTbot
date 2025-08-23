@@ -1,0 +1,6 @@
+API_KEY = "RGAPI-4d2c99d7-8f11-4a46-8032-9810ca83e082"
+PLAYER_NAME = "KAST"
+PLAYER_TAG = "KR1"
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1408443594141990922/jKlG5x2mpc4h3HbeoT5Zidd3lEeItq0rfLZsyMY8bdw_yktEC_zkcV_l4yXYtH46z3BQ"
+STREAK_FILE = "streak_data.json"
+TRANS_TRAIT_FILE = "trait_ko.json"
