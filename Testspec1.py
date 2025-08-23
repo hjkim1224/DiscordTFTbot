@@ -12,10 +12,10 @@ import collections
 
 # --------------------------------------------------------------------------------
 
-API_KEY = "RGAPI-b37b8cf9-4576-42be-80c9-920a0c2feac3" #API 24시간마다초기화잊지않기기기기
-PLAYER_NAME = "현실회피장치"
-PLAYER_TAG = "LOL"
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1408331948346179704/1ZQfxKsEiKwX13Ta1fV9iKUC-JXqskG6tqcKfiGC_-ase0RVFN3FtSP1hRA9nH7Qp-cx"
+API_KEY = "RGAPI-4d2c99d7-8f11-4a46-8032-9810ca83e082" #API 24시간마다초기화잊지않기기기기
+PLAYER_NAME = "Elemental"
+PLAYER_TAG = "KR1"
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1408443594141990922/jKlG5x2mpc4h3HbeoT5Zidd3lEeItq0rfLZsyMY8bdw_yktEC_zkcV_l4yXYtH46z3BQ"
 STREAK_FILE = "streak_data.json" #외부파일따로
 TRANS_FILE = "trait_ko.json"
 
@@ -27,14 +27,16 @@ try:
 except FileNotFoundError:
     print("번역 파일(trait_ko.json)을 찾을 수 없습니다.")
     trait_translations = {} 
+
 # -------------------------------------------------------
-#외부파일연승연패
+#연승 지표 파일 존재시 load 없다면 0으로 초기화
 def load_streak_data():
     if os.path.exists(STREAK_FILE):
         with open(STREAK_FILE, 'r') as f:
             return json.load(f)
     return {"streak_type": "None", "streak_count": 0}
 
+#연승 데이터를 다시 파일에 저장
 def save_streak_data(data):
     with open(STREAK_FILE, 'w') as f:
         json.dump(data, f)
@@ -42,12 +44,13 @@ def save_streak_data(data):
 # -----------------------------------
 # --------------------------------------------------------------------------------------------------
 
+#PUUID와 Summoner Id를 가져옴
 def get_player_ids():
-    """닉네임과 태그로 PUUID와 암호화된 Summoner ID를 모두 가져오는 함수"""
+    
     encoded_name = urllib.parse.quote(PLAYER_NAME)
     encoded_tag = urllib.parse.quote(PLAYER_TAG)
     
-    # PUUID 구하기
+    # PUUID
     account_url = f"https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{encoded_name}/{encoded_tag}"
     headers = {"X-Riot-Token": API_KEY}
     account_response = requests.get(account_url, headers=headers)
@@ -58,7 +61,7 @@ def get_player_ids():
         return None, None
     puuid = account_response.json()['puuid']
     
-    #  Summoner ID 구하기
+    # Summoner ID
     summoner_url = f"https://kr.api.riotgames.com/tft/summoner/v1/summoners/by-puuid/{puuid}"
     summoner_response = requests.get(summoner_url, headers=headers)
     
@@ -72,7 +75,7 @@ def get_player_ids():
     
     return puuid, summoner_id
 
-
+#해당 유저의 랭크 점수를 불러오고 (tier, rank, lp)순서로 반환함
 def get_league_info(puuid):
     if not puuid: return "Unranked", "IV", 0
     url = f"https://kr.api.riotgames.com/tft/league/v1/by-puuid/{puuid}"
@@ -81,17 +84,18 @@ def get_league_info(puuid):
     if response.status_code == 200 and response.json():
         league_data = response.json()[0]
         tier = league_data['tier']
-        rank = league_data.get('rank', 'I') # Master 이상은 rank 정보가 없는듯
+        rank = league_data.get('rank', 'I') # Api에서 Master 이상은 rank를 I로 반환함.
         lp = league_data['leaguePoints']
         return tier, rank, lp
     return "Unranked", "IV", 0
 
-def convert_rank_to_score(tier, rank, lp):           #랭크를점수로
+#랭크를 점수로 변환
+def convert_rank_to_score(tier, rank, lp):
     tier_base_scores = {"IRON": 0, "BRONZE": 400, "SILVER": 800, "GOLD": 1200, "PLATINUM": 1600, "EMERALD": 2000, "DIAMOND": 2400, "MASTER": 2800, "GRANDMASTER": 2800, "CHALLENGER": 2800}
     rank_scores = {"IV": 0, "III": 100, "II": 200, "I": 300}
     
     if tier == "Unranked":
-        return 800 # 언랭은실버
+        return 800 # 언랭은 실버로 계산
     
     
     base_score = tier_base_scores.get(tier, 0)
@@ -103,8 +107,10 @@ def convert_rank_to_score(tier, rank, lp):           #랭크를점수로
     else:
         return base_score + rank_score + lp
 
-def convert_score_to_rank(score):         #점수를랭크로
-    if score >= 2800: # Master+
+#점수를 랭크로 변환
+def convert_score_to_rank(score):         
+    
+    if score >= 2800:
         lp = score - 2800
         # 마스터 이상은 2800으로퉁
         return "Master", f"{lp} LP"
